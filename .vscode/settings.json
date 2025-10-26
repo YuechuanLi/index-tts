@@ -1,0 +1,227 @@
+{
+  // Python Configuration
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.analysis.autoImportCompletions": true,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.diagnosticMode": "workspace",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}",
+    "${workspaceFolder}/indextts"
+  ],
+
+  // Pylance Settings
+  "python.languageServer": "Pylance",
+  "python.analysis.completeFunctionParens": true,
+  "python.analysis.inlayHints.functionReturnTypes": true,
+  "python.analysis.inlayHints.variableTypes": true,
+
+  // Formatting
+  "python.formatting.provider": "none",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.rulers": [88, 120]
+  },
+
+  // Black Formatter
+  "black-formatter.args": [
+    "--line-length=88"
+  ],
+
+  // Linting (Ruff - Primary Linter)
+  "ruff.enable": true,
+  "ruff.organizeImports": true,
+  "ruff.fixAll": true,
+  "ruff.lint.run": "onSave",
+
+  // Disable Pylint (we use Ruff instead)
+  "python.linting.enabled": false,
+  "python.linting.pylintEnabled": false,
+  "pylint.enabled": false,
+
+  // File Associations
+  "files.associations": {
+    "*.yaml": "yaml",
+    "*.yml": "yaml",
+    "*.jsonl": "jsonl",
+    "*.pth": "binary",
+    "*.safetensors": "binary"
+  },
+
+  // Files to Exclude from Explorer
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/*.pyo": true,
+    "**/.pytest_cache": true,
+    "**/.mypy_cache": true,
+    "**/.ruff_cache": true,
+    "**/*.egg-info": true,
+    ".venv": false,
+    "**/.ipynb_checkpoints": true
+  },
+
+  // Search Exclusions
+  "search.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true,
+    "**/.venv": true,
+    "**/node_modules": true,
+    "**/.git": true,
+    "**/*.pth": true,
+    "**/*.safetensors": true,
+    "**/*.bin": true,
+    "**/.ipynb_checkpoints": true,
+    "checkpoints/hf_cache": true
+  },
+
+  // File Watcher Exclusions (Performance)
+  "files.watcherExclude": {
+    "**/.git/objects/**": true,
+    "**/.git/subtree-cache/**": true,
+    "**/node_modules/**": true,
+    "**/.venv/**": true,
+    "**/checkpoints/**": true,
+    "**/__pycache__/**": true,
+    "**/*.pth": true,
+    "**/*.safetensors": true
+  },
+
+  // Terminal
+  "terminal.integrated.env.linux": {
+    "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}"
+  },
+  "terminal.integrated.env.osx": {
+    "PYTHONPATH": "${workspaceFolder}:${env:PYTHONPATH}"
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder};${env:PYTHONPATH}"
+  },
+
+  // Git
+  "git.ignoreLimitWarning": true,
+  "git.largeFileThreshold": 10485760,
+
+  // YAML
+  "[yaml]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "yaml.schemas": {
+    "https://json.schemastore.org/pyproject.json": "pyproject.toml"
+  },
+
+  // JSON
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+
+  // Markdown
+  "[markdown]": {
+    "editor.wordWrap": "on",
+    "editor.quickSuggestions": {
+      "comments": "off",
+      "strings": "off",
+      "other": "off"
+    }
+  },
+
+  // Jupyter Notebooks
+  "jupyter.askForKernelRestart": false,
+  "notebook.cellToolbarLocation": {
+    "default": "right",
+    "jupyter-notebook": "left"
+  },
+
+  // IntelliSense
+  "editor.suggestSelection": "first",
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  },
+
+  // Editor Improvements
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.minimap.enabled": true,
+  "editor.cursorBlinking": "smooth",
+  "editor.smoothScrolling": true,
+  "workbench.list.smoothScrolling": true,
+
+  // Breadcrumbs
+  "breadcrumbs.enabled": true,
+  "breadcrumbs.symbolPath": "on",
+
+  // Audio/Media Files
+  "workbench.editorAssociations": {
+    "*.wav": "default",
+    "*.mp3": "default",
+    "*.pth": "default",
+    "*.safetensors": "default"
+  },
+
+  // Task Runner
+  "task.autoDetect": "on",
+
+  // Extension: Better Comments
+  "better-comments.tags": [
+    {
+      "tag": "!",
+      "color": "#FF2D00",
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    },
+    {
+      "tag": "?",
+      "color": "#3498DB",
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    },
+    {
+      "tag": "//",
+      "color": "#474747",
+      "strikethrough": true,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    },
+    {
+      "tag": "todo",
+      "color": "#FF8C00",
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    },
+    {
+      "tag": "*",
+      "color": "#98C379",
+      "strikethrough": false,
+      "underline": false,
+      "backgroundColor": "transparent",
+      "bold": false,
+      "italic": false
+    }
+  ]
+}

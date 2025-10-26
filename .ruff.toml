@@ -1,0 +1,123 @@
+# Ruff configuration for IndexTTS project
+# Ruff is a fast Python linter written in Rust
+# Documentation: https://docs.astral.sh/ruff/
+
+# Exclude common directories
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*.egg-info",
+    ".pytest_cache",
+    ".mypy_cache",
+    ".ruff_cache",
+    "build",
+    "dist",
+    "checkpoints",
+    "outputs",
+    "examples",
+]
+
+# Line length to match Black formatter
+line-length = 88
+
+# Target Python 3.12+
+target-version = "py312"
+
+[lint]
+# Enable specific rule sets
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort (import sorting)
+    "N",    # pep8-naming
+    "UP",   # pyupgrade (modernize syntax)
+    "B",    # flake8-bugbear (common bugs)
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+]
+
+# Disable specific rules that are too strict for ML/AI projects
+ignore = [
+    "E501",   # Line too long (handled by formatter)
+    "E741",   # Ambiguous variable name (l, I, O) - common in math/ML
+    "N803",   # Argument name should be lowercase - ML uses capital names
+    "N806",   # Variable in function should be lowercase - ML conventions
+    "N812",   # Lowercase imported as non-lowercase - torch.nn.functional as F
+    "N813",   # Camelcase imported as lowercase
+    "N999",   # Invalid module name
+    "B008",   # Do not perform function call in argument defaults
+    "B905",   # zip without strict parameter (Python 3.10+)
+    "SIM102", # Use single if statement - sometimes nested is clearer
+    "SIM108", # Use ternary operator - not always more readable
+    "UP006",  # Use type instead of Type for annotations (Python 3.10+)
+    "UP007",  # Use X | Y for type annotations (Python 3.10+)
+    "C408",   # Unnecessary dict call - dict() vs {}
+]
+
+# Allow autofix for safe rules
+fixable = [
+    "I",    # isort (import sorting)
+    "F401", # Remove unused imports
+    "UP",   # pyupgrade modernizations
+]
+
+unfixable = []
+
+[lint.per-file-ignores]
+# Ignore specific rules in specific files/directories
+
+# Init files can have unused imports (for re-exporting)
+"__init__.py" = ["F401", "F403"]
+
+# Test files can have various violations
+"tests/**/*.py" = ["F401", "F811"]
+
+# WebUI and CLI can have more relaxed rules
+"webui.py" = ["E402", "F401"]  # Module level import not at top
+"indextts/cli.py" = ["E402", "F401"]
+
+# Third-party/vendored code (transformers, maskgct, etc.)
+"indextts/gpt/transformers_*.py" = ["E", "W", "F", "N", "B", "C4", "SIM"]
+"indextts/utils/maskgct/**/*.py" = ["E", "W", "F", "N", "B", "C4", "SIM"]
+"indextts/s2mel/modules/openvoice/**/*.py" = ["E", "W", "F", "N"]
+"indextts/BigVGAN/**/*.py" = ["E", "W", "F", "N"]
+
+[lint.isort]
+# Import sorting configuration (compatible with Black)
+force-single-line = false
+force-sort-within-sections = false
+lines-after-imports = 2
+known-first-party = ["indextts"]
+known-third-party = [
+    "torch",
+    "torchaudio",
+    "transformers",
+    "modelscope",
+    "librosa",
+    "numpy",
+    "gradio",
+]
+section-order = [
+    "future",
+    "standard-library",
+    "third-party",
+    "first-party",
+    "local-folder"
+]
+
+[lint.mccabe]
+# Maximum cyclomatic complexity (for ML code, higher is acceptable)
+max-complexity = 15
+
+[lint.pydocstyle]
+# Docstring conventions
+convention = "google"
+
+[format]
+# Use Black-compatible formatting
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

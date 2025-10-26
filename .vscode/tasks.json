@@ -1,0 +1,239 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Run WebUI",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "webui.py",
+        "--fp16",
+        "--verbose"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Run WebUI (CPU)",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "webui.py",
+        "--verbose"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "new"
+      }
+    },
+    {
+      "label": "Install Dependencies",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "sync",
+        "--all-extras"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Install Dependencies (No DeepSpeed)",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "sync",
+        "--extra",
+        "webui"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Update Dependencies",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "sync",
+        "--all-extras",
+        "--upgrade"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Check GPU",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "tools/gpu_check.py"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Run Tests",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "pytest",
+        "tests/",
+        "-v"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Format Code (Black)",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "black",
+        "."
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Lint Code (Ruff)",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "ruff",
+        "check",
+        "."
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Fix Code (Ruff)",
+      "type": "shell",
+      "command": "uv",
+      "args": [
+        "run",
+        "ruff",
+        "check",
+        "--fix",
+        "."
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Download Models (HuggingFace)",
+      "type": "shell",
+      "command": "hf",
+      "args": [
+        "download",
+        "IndexTeam/IndexTTS-2",
+        "--local-dir=checkpoints"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Download Models (ModelScope)",
+      "type": "shell",
+      "command": "modelscope",
+      "args": [
+        "download",
+        "--model",
+        "IndexTeam/IndexTTS-2",
+        "--local_dir",
+        "checkpoints"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Clean Cache",
+      "type": "shell",
+      "command": "find",
+      "args": [
+        ".",
+        "-type",
+        "d",
+        "-name",
+        "__pycache__",
+        "-exec",
+        "rm",
+        "-rf",
+        "{}",
+        "+"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Git Status",
+      "type": "shell",
+      "command": "git",
+      "args": [
+        "status"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+# Pylint configuration - MOSTLY DISABLED
+# We use Ruff as the primary linter for better performance
+# This file disables most Pylint checks to avoid conflicts
+
+[MASTER]
+# Disable Pylint by default - use Ruff instead
+disable=all
+
+# Only enable critical errors if Pylint is accidentally run
+enable=
+    syntax-error,
+    fatal
+
+# Ignore patterns
+ignore=CVS,
+       .git,
+       __pycache__,
+       .venv,
+       checkpoints,
+       examples,
+       outputs
+
+ignore-patterns=
+    test_.*?\.py,
+    .*_test\.py
+
+[MESSAGES CONTROL]
+# Disable everything except fatal errors
+disable=all
+
+[REPORTS]
+# Disable reports
+reports=no
+
+[FORMAT]
+# Maximum line length (for reference, actual formatting done by Black)
+max-line-length=88

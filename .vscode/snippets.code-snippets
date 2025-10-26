@@ -1,0 +1,111 @@
+{
+  "IndexTTS2 Inference Example": {
+    "prefix": "indextts2-infer",
+    "body": [
+      "from indextts.infer_v2 import IndexTTS2",
+      "",
+      "tts = IndexTTS2(",
+      "    cfg_path=\"checkpoints/config.yaml\",",
+      "    model_dir=\"checkpoints\",",
+      "    use_fp16=${1:True},",
+      "    use_cuda_kernel=${2:True}",
+      ")",
+      "",
+      "tts.infer(",
+      "    spk_audio_prompt='${3:examples/voice_01.wav}',",
+      "    text=\"${4:Hello world}\",",
+      "    output_path=\"${5:output.wav}\",",
+      "    verbose=True",
+      ")",
+      "$0"
+    ],
+    "description": "IndexTTS2 basic inference example"
+  },
+  "IndexTTS2 Emotion Vector": {
+    "prefix": "indextts2-emotion-vector",
+    "body": [
+      "# Emotion vector: [happy, angry, sad, afraid, disgusted, melancholic, surprised, calm]",
+      "emotion = [${1:0}, ${2:0}, ${3:0}, ${4:0}, ${5:0}, ${6:0}, ${7:0}, ${8:0}]",
+      "",
+      "tts.infer(",
+      "    spk_audio_prompt='${9:examples/voice_01.wav}',",
+      "    text=\"${10:Text to synthesize}\",",
+      "    emo_vector=emotion,",
+      "    emo_alpha=${11:1.0},",
+      "    output_path=\"${12:output.wav}\"",
+      ")",
+      "$0"
+    ],
+    "description": "IndexTTS2 emotion vector control"
+  },
+  "IndexTTS2 Text Emotion": {
+    "prefix": "indextts2-emotion-text",
+    "body": [
+      "tts.infer(",
+      "    spk_audio_prompt='${1:examples/voice_01.wav}',",
+      "    text=\"${2:Text to synthesize}\",",
+      "    use_emo_text=True,",
+      "    emo_text=\"${3:Custom emotion description}\",",
+      "    emo_alpha=${4:0.6},",
+      "    output_path=\"${5:output.wav}\"",
+      ")",
+      "$0"
+    ],
+    "description": "IndexTTS2 text-based emotion control"
+  },
+  "PyTorch Model Loading": {
+    "prefix": "torch-load",
+    "body": [
+      "import torch",
+      "",
+      "device = torch.device('${1:cuda:0}' if torch.cuda.is_available() else 'cpu')",
+      "model = ${2:ModelClass}(${3:args})",
+      "checkpoint = torch.load('${4:checkpoint.pth}', map_location=device)",
+      "model.load_state_dict(checkpoint)",
+      "model = model.to(device)",
+      "model.eval()",
+      "$0"
+    ],
+    "description": "PyTorch model loading template"
+  },
+  "Audio Loading": {
+    "prefix": "audio-load",
+    "body": [
+      "import librosa",
+      "import torch",
+      "",
+      "audio, sr = librosa.load('${1:audio.wav}', sr=${2:24000})",
+      "audio_tensor = torch.FloatTensor(audio).unsqueeze(0)",
+      "$0"
+    ],
+    "description": "Load audio file with librosa"
+  },
+  "Python Class Template": {
+    "prefix": "class-template",
+    "body": [
+      "class ${1:ClassName}:",
+      "    \"\"\"${2:Class description}\"\"\"",
+      "    ",
+      "    def __init__(self, ${3:args}):",
+      "        \"\"\"Initialize ${1:ClassName}.",
+      "        ",
+      "        Args:",
+      "            ${3:args}: ${4:Description}",
+      "        \"\"\"",
+      "        ${5:pass}",
+      "    ",
+      "    def ${6:method_name}(self, ${7:args}):",
+      "        \"\"\"${8:Method description}.",
+      "        ",
+      "        Args:",
+      "            ${7:args}: ${9:Description}",
+      "        ",
+      "        Returns:",
+      "            ${10:Return description}",
+      "        \"\"\"",
+      "        ${11:pass}",
+      "$0"
+    ],
+    "description": "Python class template with docstrings"
+  }
+}
