@@ -19,6 +19,11 @@ conda_env*/
 *.egg-info/
 .pypirc
 
+# CUDA Build Artifacts (JIT compiled)
+**/cuda/build/
+*.so
+*.o
+
 # Operating System Junk.
 *.DS_Store
 Thumbs.db

@@ -108,14 +108,19 @@ class IndexTTS2:
                 print(f"{e!r}")
                 self.use_cuda_kernel = False
 
+        print(">> Loading SeamlessM4T feature extractor...")
         self.extract_features = SeamlessM4TFeatureExtractor.from_pretrained("facebook/w2v-bert-2.0")
+        print(">> Building semantic model (W2V-BERT)...")
         self.semantic_model, self.semantic_mean, self.semantic_std = build_semantic_model(
             os.path.join(self.model_dir, self.cfg.w2v_stat))
+        print(f">> Moving semantic model to {self.device}...")
         self.semantic_model = self.semantic_model.to(self.device)
         self.semantic_model.eval()
         self.semantic_mean = self.semantic_mean.to(self.device)
         self.semantic_std = self.semantic_std.to(self.device)
+        print(">> Semantic model ready")
 
+        print(">> Loading semantic codec...")
         semantic_codec = build_semantic_codec(self.cfg.semantic_codec)
         semantic_code_ckpt = hf_hub_download("amphion/MaskGCT", filename="semantic_codec/model.safetensors")
         safetensors.torch.load_model(semantic_codec, semantic_code_ckpt)
@@ -123,6 +128,7 @@ class IndexTTS2:
         self.semantic_codec.eval()
         print('>> semantic_codec weights restored from: {}'.format(semantic_code_ckpt))
 
+        print(">> Loading CFM (Continuous Flow Matching) model...")
         s2mel_path = os.path.join(self.model_dir, self.cfg.s2mel_checkpoint)
         s2mel = MyModel(self.cfg.s2mel, use_gpt_latent=True)
         s2mel, _, _, _ = load_checkpoint2(
@@ -133,12 +139,14 @@ class IndexTTS2:
             ignore_modules=[],
             is_distributed=False,
         )
+        print(f">> Moving CFM model to {self.device}...")
         self.s2mel = s2mel.to(self.device)
         self.s2mel.models['cfm'].estimator.setup_caches(max_batch_size=1, max_seq_length=8192)
         self.s2mel.eval()
         print(">> s2mel weights restored from:", s2mel_path)
 
         # load campplus_model
+        print(">> Loading CAMPPlus speaker embedding model...")
         campplus_ckpt_path = hf_hub_download(
             "funasr/campplus", filename="campplus_cn_common.bin"
         )
@@ -148,8 +156,10 @@ class IndexTTS2:
         self.campplus_model.eval()
         print(">> campplus_model weights restored from:", campplus_ckpt_path)
 
+        print(">> Loading BigVGAN vocoder...")
         bigvgan_name = self.cfg.vocoder.name
         self.bigvgan = bigvgan.BigVGAN.from_pretrained(bigvgan_name, use_cuda_kernel=self.use_cuda_kernel)
+        print(f">> Moving BigVGAN to {self.device}...")
         self.bigvgan = self.bigvgan.to(self.device)
         self.bigvgan.remove_weight_norm()
         self.bigvgan.eval()
