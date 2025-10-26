@@ -6,21 +6,20 @@ Provides real-time audio streaming during generation
 
 import asyncio
 import base64
-import io
 import json
 import logging
 import os
 import queue
+import tempfile
 import threading
 import time
+import wave
 from typing import Optional
 
 import numpy as np
 import torch
-import torchaudio
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
 
 from indextts.infer_v2 import IndexTTS2
 
@@ -98,11 +97,13 @@ class StreamingIndexTTS:
         start_time = time.time()
         total_samples = 0
 
+        sample_rate_holder = [self.sample_rate]
+
         try:
             # Send metadata first
             yield {
                 "type": "metadata",
-                "sample_rate": self.sample_rate,
+                "sample_rate": sample_rate_holder[0],
                 "chunk_size": self.chunk_size,
                 "text": text,
             }
@@ -113,29 +114,44 @@ class StreamingIndexTTS:
 
             def generate_audio():
                 try:
-                    # Use a temporary file for full audio generation
-                    temp_path = f"/tmp/tts_stream_{time.time()}.wav"
+                    # Use a temporary file for full audio generation (auto-cleaned)
+                    fd, temp_path = tempfile.mkstemp(suffix=".wav")
+                    os.close(fd)
 
-                    # Generate full audio
-                    self.tts.infer(
-                        spk_audio_prompt=spk_audio_prompt,
-                        text=text,
-                        output_path=temp_path,
-                        emo_audio_prompt=emo_audio_prompt,
-                        emo_vector=emo_vector,
-                        emo_text=emo_text,
-                        use_emo_text=use_emo_text,
-                        emo_alpha=emo_alpha,
-                        use_random=use_random,
-                        verbose=False,
-                    )
+                    try:
+                        # Generate full audio
+                        self.tts.infer(
+                            spk_audio_prompt=spk_audio_prompt,
+                            text=text,
+                            output_path=temp_path,
+                            emo_audio_prompt=emo_audio_prompt,
+                            emo_vector=emo_vector,
+                            emo_text=emo_text,
+                            use_emo_text=use_emo_text,
+                            emo_alpha=emo_alpha,
+                            use_random=use_random,
+                            verbose=False,
+                        )
 
-                    # Load generated audio
-                    waveform, sr = torchaudio.load(temp_path)
-                    audio_np = waveform.squeeze().cpu().numpy()
+                        # Load generated audio
+                        with wave.open(temp_path, "rb") as wav_file:
+                            sr = wav_file.getframerate()
+                            channels = wav_file.getnchannels()
+                            frames = wav_file.getnframes()
+                            audio_bytes = wav_file.readframes(frames)
 
-                    # Clean up temp file
-                    os.remove(temp_path)
+                        audio_np = np.frombuffer(audio_bytes, dtype=np.int16)
+                        if channels > 1:
+                            # average stereo channels to mono to match downstream expectations
+                            audio_np = audio_np.reshape(-1, channels).mean(axis=1)
+                        audio_np = audio_np.astype(np.float32) / 32767.0
+                        sample_rate_holder[0] = int(sr)
+                    finally:
+                        # Clean up temp file
+                        try:
+                            os.remove(temp_path)
+                        except OSError:
+                            pass
 
                     # Split into chunks and queue
                     for i in range(0, len(audio_np), self.chunk_size):
@@ -170,6 +186,7 @@ class StreamingIndexTTS:
 
                 # Convert to bytes and encode
                 chunk_bytes = (chunk * 32767).astype(np.int16).tobytes()
+                current_sample_rate = sample_rate_holder[0]
                 chunk_b64 = base64.b64encode(chunk_bytes).decode("utf-8")
 
                 total_samples += len(chunk)
@@ -178,7 +195,7 @@ class StreamingIndexTTS:
                     "type": "audio",
                     "data": chunk_b64,
                     "chunk_id": chunk_id,
-                    "sample_rate": self.sample_rate,
+                    "sample_rate": current_sample_rate,
                     "chunk_samples": len(chunk),
                 }
 
@@ -193,7 +210,7 @@ class StreamingIndexTTS:
                 "type": "complete",
                 "total_chunks": chunk_id,
                 "total_samples": total_samples,
-                "total_duration": total_samples / self.sample_rate,
+                "total_duration": total_samples / max(sample_rate_holder[0], 1),
                 "generation_time": duration,
             }
 
