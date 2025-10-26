@@ -66,4 +66,4 @@ echo "================================"
 echo ""
 
 # Start server from project root with stream.streaming_server module
-uv run uvicorn stream.streaming_server:app --host "$HOST" --port "$PORT" --log-level info
+exec uv run uvicorn stream.streaming_server:app --host "$HOST" --port "$PORT" --log-level info

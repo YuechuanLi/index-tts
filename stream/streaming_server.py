@@ -226,17 +226,35 @@ class StreamingIndexTTS:
 # FastAPI application
 app = FastAPI(title="IndexTTS Streaming Server", version="1.0.0")
 
-# Global model instance
+# Global model state
 streaming_tts: Optional[StreamingIndexTTS] = None
+model_ready_event: asyncio.Event | None = None
+model_load_error: Optional[Exception] = None
+
+
+async def _load_model_async(config: dict):
+    """Background task that loads the model without blocking startup."""
+    global streaming_tts, model_load_error
+    assert model_ready_event is not None, "model_ready_event must be initialized"
+
+    try:
+        logger.info("Starting IndexTTS Streaming Server...")
+        streaming_tts = await asyncio.to_thread(StreamingIndexTTS, **config)
+        logger.info("IndexTTS model loaded and ready!")
+    except Exception as exc:
+        model_load_error = exc
+        logger.error("Failed to load IndexTTS model", exc_info=True)
+    finally:
+        model_ready_event.set()
 
 
 @app.on_event("startup")
 async def startup_event():
-    """Initialize model on startup"""
-    global streaming_tts
-    logger.info("Starting IndexTTS Streaming Server...")
+    """Kick off asynchronous model initialization."""
+    global model_ready_event
+    logger.info("Scheduling IndexTTS model load task...")
+    model_ready_event = asyncio.Event()
 
-    # Load configuration from environment or defaults
     config = {
         "cfg_path": os.getenv("TTS_CONFIG", "checkpoints/config.yaml"),
         "model_dir": os.getenv("TTS_MODEL_DIR", "checkpoints"),
@@ -246,8 +264,7 @@ async def startup_event():
         "chunk_size": int(os.getenv("TTS_CHUNK_SIZE", "4096")),
     }
 
-    streaming_tts = StreamingIndexTTS(**config)
-    logger.info("IndexTTS model loaded and ready!")
+    asyncio.create_task(_load_model_async(config))
 
 
 @app.websocket("/ws/stream")
@@ -255,6 +272,26 @@ async def websocket_stream(websocket: WebSocket):
     """WebSocket endpoint for streaming TTS"""
     await websocket.accept()
     logger.info(f"WebSocket connection established: {websocket.client}")
+
+    if model_ready_event is None:
+        await websocket.close(code=1011)
+        return
+
+    await model_ready_event.wait()
+
+    if model_load_error:
+        await websocket.send_json(
+            {"type": "error", "message": f"Model failed to load: {model_load_error}"}
+        )
+        await websocket.close(code=1011)
+        return
+
+    if streaming_tts is None:
+        await websocket.send_json(
+            {"type": "error", "message": "Model not available"}
+        )
+        await websocket.close(code=1011)
+        return
 
     try:
         while True:
@@ -728,6 +765,8 @@ async def health_check():
     return {
         "status": "healthy",
         "model_loaded": streaming_tts is not None,
+        "model_ready": model_ready_event.is_set() if model_ready_event else False,
+        "model_error": str(model_load_error) if model_load_error else None,
         "version": "1.0.0",
     }
 
